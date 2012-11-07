@@ -1,13 +1,9 @@
-# Copyright 2008 www.guitar-list.com
-# version 1.2.1 02-04-2008
+# Plugin by Nathan Bromham (www.guitar-list.com)
+# version 1.2.2 23-10-2012
 
-# Permission to use, copy, modify, and distribute this software for 
-# any purpose and without fee is hereby granted, provided that the above
-# copyright notice appear in all copies.
+# You are free to use this software for any purpose, to distribute it, to modify it, 
+# and to distribute modified versions of it, under the terms of the Apache 2 license
 
-# THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 #-----------------------------------------------------------------------------
 
 require 'sketchup.rb'
@@ -34,12 +30,12 @@ def get_curve_points(radius,width,thickness,x, resolution)
         if z < 0.0 
           z=0.0
         end
-        pts.push (Geom::Point3d.new(x,y,z))
+        pts.push(Geom::Point3d.new(x,y,z))
     end
     pts
 end
 
-def get_fret_side(d,nutradius,nutwidth,bodyradius,bodywidth,boardlength,boardthickness,tangdepth,res)
+def get_fret_side(d,nutradius,nutwidth,bodyradius,bodywidth,boardlength,boardthickness, tangdepth,res)
         fretradius = nutradius + ( d*(bodyradius-nutradius))/boardlength
         fretwidth = nutwidth + ( d*(bodywidth-nutwidth))/boardlength
         #top of fret groove
@@ -66,24 +62,30 @@ def create_fretboard
     # First prompt for the dimensions.  
     prompts = [$exStrings.GetString("Scale Length"), $exStrings.GetString("Width at nut"), 
     $exStrings.GetString("Radius at nut"), $exStrings.GetString("Width at body"), 
-    $exStrings.GetString("Radius at body"),  $exStrings.GetString("Board thickness"),
+    $exStrings.GetString("Radius at body"),  $exStrings.GetString("Board thickness at nut"), 
+    $exStrings.GetString("Board thickness at body"),
     $exStrings.GetString("No. of frets"),$exStrings.GetString("Depth of fret slot"), 
     $exStrings.GetString("width of fret slot"),$exStrings.GetString("width of nut slot"),
     $exStrings.GetString("depth of nut slot") ]
     #default values - in  inches
-    values = [25.0, 2.38, 18.0, 3.0, 20.0, 0.23, 22, 0.023, 0.023, 0.125, 0.125]
+    values = [25.0, 2.38, 18.0, 3.0, 20.0, 0.23, 0.23, 22, 0.023, 0.023, 0.125, 0.125]
     
     # Now display the inputbox
-    results = inputbox prompts, values, $exStrings.GetString("Fretboard Dimensions")
+    results = inputbox prompts, values, $exStrings.GetString("Fretboard Dimensions (inches)")
 
     return if not results # This means that the user cancelled the operation
-    scalelength, nutwidth, nutradius, bodywidth, bodyradius, boardthickness, fretcount, tangdepth, tangwidth,nutslotwidth,nutslotdepth = results
+    scalelength, nutwidth, nutradius, bodywidth, bodyradius, boardthicknessnut,boardthicknessbody, fretcount, tangdepth, tangwidth,nutslotwidth,nutslotdepth = results
     
     model = Sketchup.active_model   
     model.start_operation $exStrings.GetString("Create Fretboard")
     model.layers.add("Fretboard")
-	  model.active_layer= model.layers["Fretboard"]
+    model.layers.add("Inlays")
+    model.layers.add("Fretlines")
+	model.active_layer= model.layers["Fretboard"]
     $boardentities = model.entities
+    #
+    boardthickness = boardthicknessnut
+    thicknesscorrectionbody =  boardthicknessnut - boardthicknessbody
     
     #calculate the length of the fret board 
     boardlength = scalelength - (scalelength / (2.0 **( (fretcount + 1) / 12.0) ))
@@ -98,8 +100,8 @@ def create_fretboard
     #body end plane of fretboard
     wb = bodywidth/2.0
     pts = []
-    pts[0] = [0,-wb, 0] 
-    pts[1] = [0,wb, 0]
+    pts[0] = [0,-wb, thicknesscorrectionbody] 
+    pts[1] = [0,wb, thicknesscorrectionbody]
     ptsbody.push(pts[0])
     ptsbody.push(pts[1])
     base = $boardentities.add_face ptsbody 
@@ -133,14 +135,15 @@ def create_fretboard
     end
     
     #underneath of fretboard
-    rect_face([0,-wb, 0],[0,wb, 0],[boardlength,-wn,0 ],[boardlength,wn,0 ])
+    rect_face([0,-wb, thicknesscorrectionbody],[0,wb, thicknesscorrectionbody],[boardlength,-wn,0 ],[boardlength,wn,0 ])
    
     #sides of fretboard
-    rect_face(ptsbody[res],[0,-wb,0],ptsnut[res],[boardlength,-wn,0])
-    rect_face(ptsbody[0],[0,wb,0],ptsnut[0],[boardlength,wn,0])
+    rect_face(ptsbody[res],[0,-wb,thicknesscorrectionbody],ptsnut[res],[boardlength,-wn,0])
+    rect_face(ptsbody[0],[0,wb,thicknesscorrectionbody],ptsnut[0],[boardlength,wn,0])
     
     model.layers.add("Fret_slots")
-	  fretptslast = []
+	fretptslast = []
+	inlaypositions = [3,5,7,9,12,15,17,19,21,24]
     #draw fret grooves
     for i in 0 ... fretcount+1 do
         d1 = scalelength - (scalelength / (2.0 **( i / 12.0) ))
@@ -176,6 +179,26 @@ def create_fretboard
         }      
         rect_face(fretpts.first,fretpts.last,fretpts2.first,fretpts2.last)
         rect_face(fretpts[res],fretpts[res+1],fretpts2[res],fretpts2[res+1])
+        #construction point to aid positioning of inlays 
+        model.active_layer= model.layers["Inlays"]
+        inlaypos = boardlength - (d1+d2)/2.0
+        boardwidth =  (nutwidth + ((boardlength-inlaypos)*(bodywidth-nutwidth))/boardlength)
+        offsetinlaypos = boardwidth/4.0
+        #centrepoint
+        point1 = Geom::Point3d.new(inlaypos,0,boardthickness+0.01)
+        constpoint1 = $boardentities.add_cpoint point1
+        #lowerpoint
+        point2 = Geom::Point3d.new(inlaypos,-offsetinlaypos,boardthickness+0.01)
+        constpoint2 = $boardentities.add_cpoint point2
+        #upperpoint
+        point3 = Geom::Point3d.new(inlaypos,offsetinlaypos,boardthickness+0.01)
+        constpoint3 = $boardentities.add_cpoint point3
+        #fretline
+        model.active_layer= model.layers["Fretlines"]
+        fretpos = boardlength - ( scalelength - (scalelength / (2.0 **( i / 12.0) )))
+        fretpoint1 = Geom::Point3d.new(fretpos,-(boardwidth/2.0),boardthickness+0.01)
+        fretpoint2 = Geom::Point3d.new(fretpos,(boardwidth/2.0),boardthickness+0.01)
+        $boardentities.add_line(fretpoint1,fretpoint2)       
     end
     # We're finished we can end the operation
     model.commit_operation
