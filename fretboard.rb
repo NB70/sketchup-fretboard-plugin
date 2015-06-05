@@ -60,24 +60,24 @@ end
 
 def create_fretboard
     # First prompt for the dimensions.  
-    prompts = [$exStrings.GetString("Scale Length"), $exStrings.GetString("Width at nut"), 
-    $exStrings.GetString("Radius at nut"), $exStrings.GetString("Width at body"), 
-    $exStrings.GetString("Radius at body"),  $exStrings.GetString("Board thickness at nut"), 
-    $exStrings.GetString("Board thickness at body"),
-    $exStrings.GetString("No. of frets"),$exStrings.GetString("Depth of fret slot"), 
-    $exStrings.GetString("width of fret slot"),$exStrings.GetString("width of nut slot"),
-    $exStrings.GetString("depth of nut slot") ]
+    prompts = ["Scale Length", "Width at nut", 
+    "Radius at nut", "Width at body", 
+    "Radius at body","Board thickness at nut", 
+    "Board thickness at body",
+    "No. of frets","Depth of fret slot", 
+    "width of fret slot","width of nut slot",
+    "depth of nut slot" ]
     #default values - in  inches
     values = [25.0, 2.38, 18.0, 3.0, 20.0, 0.23, 0.23, 22, 0.023, 0.023, 0.125, 0.125]
     
     # Now display the inputbox
-    results = inputbox prompts, values, $exStrings.GetString("Fretboard Dimensions (inches)")
+    results = inputbox prompts, values,"Fretboard Dimensions (inches)"
 
     return if not results # This means that the user cancelled the operation
     scalelength, nutwidth, nutradius, bodywidth, bodyradius, boardthicknessnut,boardthicknessbody, fretcount, tangdepth, tangwidth,nutslotwidth,nutslotdepth = results
     
     model = Sketchup.active_model   
-    model.start_operation $exStrings.GetString("Create Fretboard")
+    model.start_operation ("Create Fretboard")
     model.layers.add("Fretboard")
     model.layers.add("Inlays")
     model.layers.add("Fretlines")
@@ -207,13 +207,11 @@ end
 # First check to see if we have already loaded this file so that we only 
 # add the item to the menu once
 if( not file_loaded?("fretboard.rb") )
-
     # This will add a separator to the menu, but only once
-    add_separator_to_menu($exStrings.GetString("Draw"))
+    add_separator_to_menu("Draw")
     # To add an item to a menu, you identify the menu, and then
-    # provide a title to display and a block to execute.  
-    UI.menu($exStrings.GetString("Draw")).add_item($exStrings.GetString("fretboard")) { create_fretboard }
-
+    # provide a title to display and a block to execute. 
+     UI.menu("Draw").add_item("fretboard") { create_fretboard } 
 end
 
 #-----------------------------------------------------------------------------
