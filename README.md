@@ -7,7 +7,7 @@ A Sketchup plugin to automatically generate a conical tapered guitar fingerboard
 ##Installation
 Get install instructions and download the latest version from http://www.guitar-list.com/download-software/conical-tapered-fretboard-plugin
 
-You can install it by copying the fretboard.rb file to your plugins directory (the exact location will depend on your Sketchup version) or make a zipped version of the fretboard.rb and rename it fretboard.rbz and install via the Sketchup menus (Preferences > Extensions > Install Extension) - for more details or download the zipped version go to  http://www.guitar-list.com/download-software/conical-tapered-fretboard-plugin.
+You can install it by copying the fretboard.rb file to your plugins directory (the exact location will depend on your Sketchup version) or make a zipped version of the fretboard.rb and rename it fretboard.rbz and install via the Sketchup menus (Preferences > Extensions > Install Extension) - for more details or to download the zipped version go to  http://www.guitar-list.com/download-software/conical-tapered-fretboard-plugin.
 
 
 ##Usage
