@@ -5,9 +5,8 @@
 A Sketchup plugin to automatically generate a conical tapered guitar fingerboard. The fret slots are not flat bottomed, but follow the radius of curvature of the fingerboard. In theory this should stop the frets from compressing the fingerboard by being hammered in too far.
 
 ##Installation
-Download the latest version from http://www.guitar-list.com/download-software/conical-tapered-fretboard-plugin
+Get install instructions and download the latest version from http://www.guitar-list.com/download-software/conical-tapered-fretboard-plugin
 
-Save the fretboard.rb file to your Sketchup plugins folder. If you have installed Sketchup on the C: drive then this folder will be at C:\program files\google\google sketchup 7\plugins. 
 
 ##Usage
 After copying this file you should now a menu options in the Sketchup Draw menu to draw a fingerboard.
